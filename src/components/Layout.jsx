@@ -5,13 +5,13 @@ import { setCsvText } from '../lib/data.js'
 
 const NAV = [
   { to: '/', icon: 'bi-grid-1x2-fill', label: 'ภาพรวมผู้บริหาร', sub: 'Executive Overview', end: true },
-  { to: '/drilldown', icon: 'bi-bar-chart-line-fill', label: 'วิเคราะห์เจาะลึกรายหน่วย', sub: 'Drill-down Analytics' },
+  { to: '/drilldown', icon: 'bi-bar-chart-line-fill', label: 'ตัวชี้วัดรายข้อ', sub: 'Drill-down Analytics' },
   { to: '/executive', icon: 'bi-clipboard2-pulse-fill', label: 'ตัวชี้วัดรายคลินิก', sub: 'Clinic Scorecard' },
 ]
 
 const TITLES = {
   '/': 'ภาพรวมผู้บริหาร',
-  '/drilldown': 'วิเคราะห์เจาะลึกรายหน่วยงาน',
+  '/drilldown': 'ตัวชี้วัดรายข้อ',
   '/executive': 'ตัวชี้วัดรายคลินิก (60 ตัวชี้วัด)',
 }
 
@@ -55,7 +55,7 @@ export default function Layout({ children }) {
 
         <div className="sidebar-foot">
           <div className="fy-chip"><i className="bi bi-calendar-check" /> ปีงบประมาณ 2569</div>
-          <div className="foot-note">ผู้พัฒนา:นพ.ฉันทวัฒน์ สุทธิพงษ์, คุณมณเฑียร ปุณวัตร์</div>
+          <div className="foot-note">โดย:นพ.ฉันทวัฒน์ สุทธิพงษ์,คุณมณเฑียร ปุณวัตร์</div>
           <div className="foot-note">ข้อมูล ณ วันที่ 30 กันยายน 2569</div>
         </div>
       </aside>

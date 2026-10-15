@@ -10,22 +10,23 @@ const METRICS = [
   { key: K.hba1c, label: 'HbA1c < 7%', goodHigh: true },
   { key: K.htBp, label: 'HT คุมความดันดี', goodHigh: true },
   { key: K.dmBp, label: 'DM คุมความดันดี', goodHigh: true },
+  { key: K.egfr60, label: 'eGFR Gr >60', goodHigh: true },
   { key: K.eye, label: 'DM ตรวจตา', goodHigh: true },
   { key: K.foot, label: 'DM ตรวจเท้า', goodHigh: true },
-  { key: K.statinGap, label: 'Care Gap Statin', goodHigh: false },
 ]
 
 export default function Overview() {
   const [metric, setMetric] = useState(METRICS[0].key)
   const total = getRow([])
 
-  // Level-2 units across both clinic groups (Level1 != รวม, Level2 != รวม, Level3 = รวม)
+  // Level-2 units across both clinic groups sorted by clinic group then visits desc
   const units = useMemo(() => {
     const out = []
     getChildren([]).forEach((l1) => {
-      getChildren([l1.Level1]).forEach((l2) => out.push({ ...l2, group: l1.Level1, name: l2.Level2 }))
+      const l2List = getChildren([l1.Level1]).sort((a, b) => num(b[K.visits]) - num(a[K.visits]))
+      l2List.forEach((l2) => out.push({ ...l2, group: l1.Level1, name: l2.Level2 }))
     })
-    return out.sort((a, b) => num(b[K.visits]) - num(a[K.visits]))
+    return out
   }, [])
 
   const m = METRICS.find((x) => x.key === metric)
@@ -139,7 +140,7 @@ export default function Overview() {
             <thead>
               <tr>
                 <th>กลุ่มงาน</th><th>กลุ่มคลินิก</th><th>รับบริการ</th><th>DM</th><th>HT</th>
-                <th>HbA1c&lt;7</th><th>HT คุม BP</th><th>DM ตรวจตา</th><th>DM ตรวจเท้า</th><th>ขาด Statin</th>
+                <th>HbA1c&lt;7</th><th>HT คุม BP</th><th>eGFR Gr &gt;60</th><th>DM ตรวจตา</th><th>DM ตรวจเท้า</th>
               </tr>
             </thead>
             <tbody>
@@ -148,13 +149,13 @@ export default function Overview() {
                   <td className="fw-semibold">{u.name}</td>
                   <td className="text-muted">{u.group}</td>
                   <td>{fmtInt(u[K.visits])}</td><td>{fmtInt(u[K.dmCount])}</td><td>{fmtInt(u[K.htCount])}</td>
-                  {cell(u, K.hba1c)}{cell(u, K.htBp)}{cell(u, K.eye)}{cell(u, K.foot)}{cell(u, K.statinGap, false)}
+                  {cell(u, K.hba1c)}{cell(u, K.htBp)}{cell(u, K.egfr60)}{cell(u, K.eye)}{cell(u, K.foot)}
                 </tr>
               ))}
               <tr className="row-total">
                 <td>★ รวมทั้งโรงพยาบาล</td><td>{TOTAL}</td>
                 <td>{fmtInt(total[K.visits])}</td><td>{fmtInt(total[K.dmCount])}</td><td>{fmtInt(total[K.htCount])}</td>
-                {cell(total, K.hba1c)}{cell(total, K.htBp)}{cell(total, K.eye)}{cell(total, K.foot)}{cell(total, K.statinGap, false)}
+                {cell(total, K.hba1c)}{cell(total, K.htBp)}{cell(total, K.egfr60)}{cell(total, K.eye)}{cell(total, K.foot)}
               </tr>
             </tbody>
           </table>
@@ -164,7 +165,7 @@ export default function Overview() {
       <div className="section-label">เจาะลึกข้อมูล</div>
       <Row className="g-3">
         <Col md={6}>
-          <NavTile to="/drilldown" tone="teal" icon="bi-bar-chart-line-fill" title="วิเคราะห์เจาะลึกรายหน่วย"
+          <NavTile to="/drilldown" tone="teal" icon="bi-bar-chart-line-fill" title="ตัวชี้วัดรายข้อ"
             desc="คลิกแท่งกราฟเพื่อเจาะจากกลุ่มคลินิก → กลุ่มงาน → งาน → คลินิก → ห้องตรวจ เลือกตัวชี้วัดได้ทั้ง 60 ข้อ" />
         </Col>
         <Col md={6}>

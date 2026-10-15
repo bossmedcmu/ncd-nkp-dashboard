@@ -33,7 +33,7 @@ export default function Layout({ children }) {
     <div className="app-shell">
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
-          <div className="brand-logo"><i className="bi bi-hospital-fill" /></div>
+          <div className="brand-logo"><img src={`${import.meta.env.BASE_URL}nkp-logo.jpg`} alt="NKP" /></div>
           <div>
             <div className="brand-title">NCD Dashboard</div>
             <div className="brand-sub">โรงพยาบาลนครพิงค์</div>

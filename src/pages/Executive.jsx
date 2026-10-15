@@ -18,14 +18,56 @@ const LEVELS = [
 ]
 const DEPTH_BADGE = ['ระดับ 1: ภาพรวมโรงพยาบาล', 'ระดับ 1: กลุ่มคลินิก', 'ระดับ 2: กลุ่มงาน', 'ระดับ 3: งาน/แผนก', 'ระดับ 4: คลินิกย่อย', 'ระดับ 5: ห้องตรวจย่อย']
 
-const PIE_GROUPS = {
-  'ภาพรวมและสิทธิ': ['5. ร้อยละบัตรทอง', '6. ร้อยละ ปกส.', '7. ร้อยละเบิกได้'],
-  'คัดกรองแทรกซ้อน (ตา ฟัน เท้า ไต)': ['39. ร้อยละ eGFR Gr >60', '40. ร้อยละ eGFR Gr 3', '41. ร้อยละ eGFR Gr 4', '42. ร้อยละ eGFR Gr 5'],
+// Per-tab layout: pie = metrics drawn only in the doughnut (no boxes),
+// left = boxes beside the pie, cols = box counts per column (filled top-to-bottom, then left-to-right)
+const TAB_LAYOUT = {
+  'ภาพรวมและสิทธิ': { pie: ['5. ร้อยละบัตรทอง', '6. ร้อยละ ปกส.', '7. ร้อยละเบิกได้'], left: 'rest' },
+  'ภาระโรค NCD': { cols: [2, 2, 2] },
+  'ประเมินเสี่ยง & พฤติกรรม': { cols: [2, 4, 3] },
+  'การคุมโรค & แล็บ': { cols: [4, 4, 6] },
+  'คัดกรองแทรกซ้อน (ตา ฟัน เท้า ไต)': {
+    pie: ['39. ร้อยละ eGFR Gr >60', '40. ร้อยละ eGFR Gr 3', '41. ร้อยละ eGFR Gr 4', '42. ร้อยละ eGFR Gr 5'],
+    left: ['38. ร้อยละการตรวจ eGFR'],
+    cols: [3, 2, 4],
+  },
+  'การใช้ยา & Care Gap': { cols: [1, 2, 2] },
+  'ภาวะแทรกซ้อนรุนแรง': { cols: [2, 2, 1] },
 }
 
 const nameOf = (m) => m.split('. ').slice(1).join('. ')
 
-function PieGroup({ metrics, row }) {
+function Columns({ items, sizes, row }) {
+  let i = 0
+  return (
+    <div className="metric-cols">
+      {sizes.map((n, ci) => {
+        const chunk = items.slice(i, i + n)
+        i += n
+        return (
+          <div key={ci} className="metrics-grid">
+            {chunk.map((m) => <MetricCard key={m} metric={m} row={row} />)}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function TabBody({ tab, row }) {
+  const cfg = TAB_LAYOUT[tab] || {}
+  const pie = cfg.pie || []
+  const rest = indicatorCategories[tab].items.filter((m) => !pie.includes(m))
+  const left = cfg.left === 'rest' ? rest : cfg.left || []
+  const others = cfg.left === 'rest' ? [] : rest.filter((m) => !left.includes(m))
+  return (
+    <>
+      {pie.length > 0 && <PieGroup metrics={pie} left={left} row={row} />}
+      {others.length > 0 && <Columns items={others} sizes={cfg.cols || [others.length]} row={row} />}
+    </>
+  )
+}
+
+function PieGroup({ metrics, left, row }) {
   const values = metrics.map((m) => num(row[m]))
   const data = {
     labels: metrics.map(nameOf),
@@ -40,10 +82,10 @@ function PieGroup({ metrics, row }) {
     },
   }
   return (
-    <Row className="g-3 mb-3 align-items-center">
+    <Row className="g-3 mb-4 align-items-center">
       <Col md={6} lg={5}>
         <div className="metrics-grid">
-          {metrics.map((m) => <MetricCard key={m} metric={m} row={row} />)}
+          {left.map((m) => <MetricCard key={m} metric={m} row={row} />)}
         </div>
       </Col>
       <Col md={6} lg={7}>
@@ -144,10 +186,7 @@ export default function Executive() {
             </button>
           ))}
         </div>
-        {PIE_GROUPS[tab] && <PieGroup metrics={PIE_GROUPS[tab]} row={row} />}
-        <div className="metrics-grid">
-          {indicatorCategories[tab].items.filter((m) => !(PIE_GROUPS[tab] || []).includes(m)).map((m) => <MetricCard key={m} metric={m} row={row} />)}
-        </div>
+        <TabBody tab={tab} row={row} />
       </Panel>
 
       <Panel title={`เปรียบเทียบหน่วยงานย่อย (${children.length} หน่วยงาน)`} icon="bi-bar-chart-fill">

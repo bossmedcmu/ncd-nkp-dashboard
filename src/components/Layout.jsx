@@ -55,8 +55,7 @@ export default function Layout({ children }) {
 
         <div className="sidebar-foot">
           <div className="fy-chip"><i className="bi bi-calendar-check" /> ปีงบประมาณ 2569</div>
-          <div className="foot-note">ผู้พัฒนา: นพ.ฉันทวัฒน์ สุทธิพงษ์</div>
-          <div className="foot-note">ฐานข้อมูล: คุณมณเฑียร ปุณวัตร์</div>
+          <div className="foot-note">ผู้พัฒนา:นพ.ฉันทวัฒน์ สุทธิพงษ์, คุณมณเฑียร ปุณวัตร์</div>
           <div className="foot-note">ข้อมูล ณ วันที่ 30 กันยายน 2569</div>
         </div>
       </aside>

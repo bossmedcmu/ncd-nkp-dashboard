@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Row, Col, Form } from 'react-bootstrap'
+import { Doughnut } from 'react-chartjs-2'
+import { ChartDataLabels, palette } from '../lib/chart.js'
 import { KpiCard, Panel } from '../components/ui.jsx'
 import { buildCards } from '../lib/cards.js'
 import {
@@ -16,6 +18,43 @@ const LEVELS = [
 ]
 const DEPTH_BADGE = ['ระดับ 1: ภาพรวมโรงพยาบาล', 'ระดับ 1: กลุ่มคลินิก', 'ระดับ 2: กลุ่มงาน', 'ระดับ 3: งาน/แผนก', 'ระดับ 4: คลินิกย่อย', 'ระดับ 5: ห้องตรวจย่อย']
 
+const PIE_GROUPS = {
+  'ภาพรวมและสิทธิ': ['5. ร้อยละบัตรทอง', '6. ร้อยละ ปกส.', '7. ร้อยละเบิกได้'],
+  'คัดกรองแทรกซ้อน (ตา ฟัน เท้า ไต)': ['39. ร้อยละ eGFR Gr >60', '40. ร้อยละ eGFR Gr 3', '41. ร้อยละ eGFR Gr 4', '42. ร้อยละ eGFR Gr 5'],
+}
+
+const nameOf = (m) => m.split('. ').slice(1).join('. ')
+
+function PieGroup({ metrics, row }) {
+  const values = metrics.map((m) => num(row[m]))
+  const data = {
+    labels: metrics.map(nameOf),
+    datasets: [{ data: values, backgroundColor: metrics.map((_, i) => palette[i % palette.length]), borderColor: '#fff', borderWidth: 2 }],
+  }
+  const options = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom' },
+      datalabels: { color: '#fff', font: { weight: 600 }, formatter: (v) => `${v.toFixed(1)}%`, display: (ctx) => ctx.dataset.data[ctx.dataIndex] > 0 },
+      tooltip: { callbacks: { label: (c) => `${c.label}: ${c.parsed.toFixed(2)}%` } },
+    },
+  }
+  return (
+    <Row className="g-3 mb-3 align-items-center">
+      <Col md={6} lg={5}>
+        <div className="metrics-grid">
+          {metrics.map((m) => <MetricCard key={m} metric={m} row={row} />)}
+        </div>
+      </Col>
+      <Col md={6} lg={7}>
+        <div style={{ height: 320 }}>
+          <Doughnut data={data} options={options} plugins={[ChartDataLabels]} />
+        </div>
+      </Col>
+    </Row>
+  )
+}
+
 function MetricCard({ metric, row }) {
   const raw = row[metric]
   const v = num(raw)
@@ -25,13 +64,11 @@ function MetricCard({ metric, row }) {
   if (pct) shown = `${v.toFixed(2)}%`
   else if (metric.includes('จำนวน')) shown = fmtInt(raw)
   else if (metric.includes('อายุ')) shown = `${v.toFixed(2)} ปี`
-  const [id, ...rest] = metric.split('. ')
   return (
     <div className="metric-card">
       <div className="d-flex justify-content-between align-items-start gap-2">
         <div>
-          <div className="metric-id">ข้อ {id}</div>
-          <div className="metric-name">{rest.join('. ')}</div>
+          <div className="metric-name">{nameOf(metric)}</div>
         </div>
         <div className="metric-val" style={{ color }}>{shown}</div>
       </div>
@@ -107,8 +144,9 @@ export default function Executive() {
             </button>
           ))}
         </div>
+        {PIE_GROUPS[tab] && <PieGroup metrics={PIE_GROUPS[tab]} row={row} />}
         <div className="metrics-grid">
-          {indicatorCategories[tab].items.map((m) => <MetricCard key={m} metric={m} row={row} />)}
+          {indicatorCategories[tab].items.filter((m) => !(PIE_GROUPS[tab] || []).includes(m)).map((m) => <MetricCard key={m} metric={m} row={row} />)}
         </div>
       </Panel>
 
@@ -119,7 +157,7 @@ export default function Executive() {
               <tr>
                 <th>หน่วยงาน</th><th>รับบริการ (คน)</th><th>เบาหวาน (คน)</th><th>ความดัน (คน)</th>
                 <th>DM คุม BP ดี</th><th>HT คุม BP ดี</th><th>HbA1c &lt; 7%</th><th>LDL &lt; 100</th>
-                <th>DM ตรวจตา</th><th>DM ตรวจเท้า</th><th>LDL≥100 ขาด Statin</th>
+                <th>ร้อยละ eGFR Gr &gt;60</th><th>DM ตรวจตา</th><th>DM ตรวจเท้า</th>
               </tr>
             </thead>
             <tbody>
@@ -127,8 +165,7 @@ export default function Executive() {
                 <td>★ ค่ารวม ({path[path.length - 1] || 'ทั้งโรงพยาบาล'})</td>
                 <td>{fmtInt(row[K.visits])}</td><td>{fmtInt(row[K.dmCount])}</td><td>{fmtInt(row[K.htCount])}</td>
                 <td>{fmtPct(row[K.dmBp])}</td><td>{fmtPct(row[K.htBp])}</td><td>{fmtPct(row[K.hba1c])}</td>
-                <td>{fmtPct(row[K.ldl])}</td><td>{fmtPct(row[K.eye])}</td><td>{fmtPct(row[K.foot])}</td>
-                <td className="text-danger fw-bold">{fmtPct(row[K.statinGap])}</td>
+                <td>{fmtPct(row[K.ldl])}</td><td>{fmtPct(row[K.egfr60])}</td><td>{fmtPct(row[K.eye])}</td><td>{fmtPct(row[K.foot])}</td>
               </tr>
               {children.length === 0 ? (
                 <tr><td colSpan={11} className="text-center text-muted py-4">สิ้นสุดที่ระดับห้องตรวจย่อย (Level 5)</td></tr>
@@ -138,8 +175,7 @@ export default function Executive() {
                     <td className="fw-semibold">{c[childKey]}</td>
                     <td>{fmtInt(c[K.visits])}</td><td>{fmtInt(c[K.dmCount])}</td><td>{fmtInt(c[K.htCount])}</td>
                     <td>{fmtPct(c[K.dmBp])}</td><td>{fmtPct(c[K.htBp])}</td><td>{fmtPct(c[K.hba1c])}</td>
-                    <td>{fmtPct(c[K.ldl])}</td><td>{fmtPct(c[K.eye])}</td><td>{fmtPct(c[K.foot])}</td>
-                    <td style={{ color: num(c[K.statinGap]) > 20 ? '#ef4444' : '#0f766e', fontWeight: 600 }}>{fmtPct(c[K.statinGap])}</td>
+                    <td>{fmtPct(c[K.ldl])}</td><td>{fmtPct(c[K.egfr60])}</td><td>{fmtPct(c[K.eye])}</td><td>{fmtPct(c[K.foot])}</td>
                   </tr>
                 ))
               )}

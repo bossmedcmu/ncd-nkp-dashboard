@@ -105,14 +105,13 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="sidebar-foot">
-          <div className="fy-chip" title="ปีงบประมาณ 2569">
-            <i className="bi bi-calendar-check" />
-            <span className="fy-chip-text">ปีงบประมาณ 2569</span>
-          </div>
           <div className="foot-note">ผู้พัฒนาระบบ</div>
           <div className="foot-note">นพ.ฉันทวัฒน์ สุทธิพงษ์</div>
           <div className="foot-note">คุณมณเฑียร ปุณวัตร์</div>
-          <div className="foot-note">ข้อมูล ณ วันที่ 30 กันยายน 2569</div>
+          <div className="fy-chip" title="30 ก.ย. 2569">
+            <i className="bi bi-calendar-check" />
+            <span className="fy-chip-text">30 ก.ย. 2569</span>
+          </div>
         </div>
       </aside>
       {open && <div className="scrim" onClick={() => setOpen(false)} />}

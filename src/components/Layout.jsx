@@ -17,8 +17,39 @@ const TITLES = {
 
 export default function Layout({ children }) {
   const [open, setOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('sidebar_collapsed') === 'true'
+    } catch {
+      return false
+    }
+  })
   const fileRef = useRef(null)
   const { pathname } = useLocation()
+
+  const toggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 992) {
+      setOpen((prev) => !prev)
+    } else {
+      setCollapsed((prev) => {
+        const next = !prev
+        try {
+          localStorage.setItem('sidebar_collapsed', String(next))
+        } catch {}
+        return next
+      })
+    }
+  }
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem('sidebar_collapsed', String(next))
+      } catch {}
+      return next
+    })
+  }
 
   const onFile = (e) => {
     const f = e.target.files?.[0]
@@ -30,22 +61,42 @@ export default function Layout({ children }) {
   }
 
   return (
-    <div className="app-shell">
-      <aside className={`sidebar ${open ? 'open' : ''}`}>
+    <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      <aside className={`sidebar ${open ? 'open' : ''} ${collapsed ? 'collapsed' : ''}`}>
         <div className="brand">
-          <div className="brand-logo"><img src={`${import.meta.env.BASE_URL}nkp-logo.jpg`} alt="NKP" /></div>
-          <div>
-            <div className="brand-title">NCD Dashboard</div>
-            <div className="brand-sub">โรงพยาบาลนครพิงค์</div>
+          <div className="brand-main">
+            <div className="brand-logo" title="NCD Dashboard โรงพยาบาลนครพิงค์">
+              <img src={`${import.meta.env.BASE_URL}nkp-logo.jpg`} alt="NKP" />
+            </div>
+            <div className="brand-info">
+              <div className="brand-title">NCD Dashboard</div>
+              <div className="brand-sub">โรงพยาบาลนครพิงค์</div>
+            </div>
           </div>
+          <button
+            type="button"
+            className="sidebar-collapse-btn d-none d-lg-flex"
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'ขยายแถบข้าง' : 'ย่อแถบข้าง'}
+            title={collapsed ? 'ขยายแถบข้าง (Sidebar)' : 'ย่อแถบข้าง (Sidebar)'}
+          >
+            <i className={`bi ${collapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`} />
+          </button>
         </div>
 
         <div className="nav-caption">เมนูหลัก</div>
         <nav className="nav-list">
           {NAV.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className="nav-item-x" onClick={() => setOpen(false)}>
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.end}
+              className="nav-item-x"
+              onClick={() => setOpen(false)}
+              title={collapsed ? `${n.label} (${n.sub})` : undefined}
+            >
               <span className="nav-ico"><i className={`bi ${n.icon}`} /></span>
-              <span>
+              <span className="nav-info">
                 <span className="nav-label">{n.label}</span>
                 <span className="nav-sub">{n.sub}</span>
               </span>
@@ -54,7 +105,10 @@ export default function Layout({ children }) {
         </nav>
 
         <div className="sidebar-foot">
-          <div className="fy-chip"><i className="bi bi-calendar-check" /> ปีงบประมาณ 2569</div>
+          <div className="fy-chip" title="ปีงบประมาณ 2569">
+            <i className="bi bi-calendar-check" />
+            <span className="fy-chip-text">ปีงบประมาณ 2569</span>
+          </div>
           <div className="foot-note">ผู้พัฒนาระบบ</div>
           <div className="foot-note">นพ.ฉันทวัฒน์ สุทธิพงษ์,คุณมณเฑียร ปุณวัตร์</div>
           <div className="foot-note">ข้อมูล ณ วันที่ 30 กันยายน 2569</div>
@@ -65,8 +119,15 @@ export default function Layout({ children }) {
       <div className="main-col">
         <header className="topbar no-print">
           <div className="d-flex align-items-center gap-3">
-            <button className="menu-btn" onClick={() => setOpen(true)} aria-label="เปิดเมนู" id="btnMenu">
-              <i className="bi bi-list" />
+            <button
+              className="menu-btn"
+              onClick={toggleSidebar}
+              aria-label={collapsed ? 'ขยายแถบข้าง' : 'ย่อแถบข้าง'}
+              title={collapsed ? 'ขยายแถบข้าง (Sidebar)' : 'ย่อแถบข้าง (Sidebar)'}
+              id="btnMenu"
+            >
+              <i className="bi bi-list d-lg-none" />
+              <i className={`bi d-none d-lg-inline ${collapsed ? 'bi-layout-sidebar' : 'bi-layout-sidebar-inset'}`} />
             </button>
             <div>
               <div className="crumb-small">Executive NCD Performance</div>

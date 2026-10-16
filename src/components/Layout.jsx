@@ -35,7 +35,7 @@ export default function Layout({ children }) {
         const next = !prev
         try {
           localStorage.setItem('sidebar_collapsed', String(next))
-        } catch {}
+        } catch { }
         return next
       })
     }
@@ -46,7 +46,7 @@ export default function Layout({ children }) {
       const next = !prev
       try {
         localStorage.setItem('sidebar_collapsed', String(next))
-      } catch {}
+      } catch { }
       return next
     })
   }
@@ -110,7 +110,8 @@ export default function Layout({ children }) {
             <span className="fy-chip-text">ปีงบประมาณ 2569</span>
           </div>
           <div className="foot-note">ผู้พัฒนาระบบ</div>
-          <div className="foot-note">นพ.ฉันทวัฒน์ สุทธิพงษ์,คุณมณเฑียร ปุณวัตร์</div>
+          <div className="foot-note">นพ.ฉันทวัฒน์ สุทธิพงษ์</div>
+          <div className="foot-note">คุณมณเฑียร ปุณวัตร์</div>
           <div className="foot-note">ข้อมูล ณ วันที่ 30 กันยายน 2569</div>
         </div>
       </aside>

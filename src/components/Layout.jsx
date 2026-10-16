@@ -108,9 +108,9 @@ export default function Layout({ children }) {
           <div className="foot-note">ผู้พัฒนาระบบ</div>
           <div className="foot-note">นพ.ฉันทวัฒน์ สุทธิพงษ์</div>
           <div className="foot-note">คุณมณเฑียร ปุณวัตร์</div>
-          <div className="fy-chip" title="30 ก.ย. 2569">
+          <div className="fy-chip" title="30 ก.ย. 69">
             <i className="bi bi-calendar-check" />
-            <span className="fy-chip-text">30 ก.ย. 2569</span>
+            <span className="fy-chip-text">30 ก.ย. 69</span>
           </div>
         </div>
       </aside>

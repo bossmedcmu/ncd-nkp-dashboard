@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Row, Col, Form } from 'react-bootstrap'
+import { Row, Col, Form, Button } from 'react-bootstrap'
 import { Doughnut } from 'react-chartjs-2'
 import { ChartDataLabels, palette } from '../lib/chart.js'
 import { KpiCard, Panel } from '../components/ui.jsx'
@@ -160,15 +160,40 @@ export default function Executive() {
         <div className="banner">
           <div className="crumbs mb-0">
             <span className="fw-bold text-brand"><i className="bi bi-geo-alt-fill" /> ตำแหน่ง:</span>
-            {path.length === 0 && <span>ภาพรวมทั้งโรงพยาบาล</span>}
+            <button
+              className={`crumb ${path.length === 0 ? 'bg-white text-brand border' : ''}`}
+              onClick={() => setPath([])}
+              title="กลับสู่ภาพรวมทั้งโรงพยาบาล"
+            >
+              ภาพรวมทั้งโรงพยาบาล
+            </button>
             {path.map((p, i) => (
               <span key={i} className="d-inline-flex align-items-center gap-2">
-                {i > 0 && <i className="bi bi-chevron-right text-muted" />}
-                <button className="crumb" onClick={() => setPath(path.slice(0, i + 1))}>{i === 4 ? `ห้อง ${p}` : p}</button>
+                <i className="bi bi-chevron-right text-muted" />
+                <button
+                  className={`crumb ${i === path.length - 1 ? 'fw-bold' : ''}`}
+                  onClick={() => setPath(path.slice(0, i + 1))}
+                >
+                  {i === 4 ? `ห้อง ${p}` : p}
+                </button>
               </span>
             ))}
           </div>
-          <span className="level-badge">{DEPTH_BADGE[path.length === 0 ? 0 : path.length]}</span>
+          <div className="d-flex align-items-center gap-2">
+            {path.length > 0 && (
+              <Button
+                variant="warning"
+                size="sm"
+                className="btn-back py-1 px-3 d-inline-flex align-items-center gap-1"
+                style={{ fontSize: '13px' }}
+                onClick={() => setPath(path.slice(0, -1))}
+                title={`ย้อนกลับไป ${path.length > 1 ? path[path.length - 2] : 'ภาพรวมทั้งโรงพยาบาล'}`}
+              >
+                <i className="bi bi-arrow-left-circle-fill" /> ย้อนกลับ
+              </Button>
+            )}
+            <span className="level-badge">{DEPTH_BADGE[path.length === 0 ? 0 : path.length]}</span>
+          </div>
         </div>
       </Panel>
 
@@ -189,7 +214,70 @@ export default function Executive() {
         <TabBody tab={tab} row={row} />
       </Panel>
 
-      <Panel title={`เปรียบเทียบหน่วยงานย่อย (${children.length} หน่วยงาน)`} icon="bi-bar-chart-fill">
+      <Panel
+        title={
+          <div>
+            <div>เปรียบเทียบหน่วยงานย่อย ({children.length} หน่วยงาน)</div>
+            {path.length > 0 && (
+              <div className="text-muted fw-normal mt-1" style={{ fontSize: '13px' }}>
+                กำลังดูหน่วยงานย่อยภายใต้: <span className="text-brand fw-semibold">"{path[path.length - 1]}"</span>
+              </div>
+            )}
+          </div>
+        }
+        icon="bi-bar-chart-fill"
+        extra={
+          path.length > 0 && (
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <Button
+                id="btnSubunitBack"
+                variant="warning"
+                className="btn-back d-inline-flex align-items-center gap-2 py-1 px-3"
+                style={{ fontSize: '13.5px' }}
+                onClick={() => setPath(path.slice(0, -1))}
+                title={`ย้อนกลับไป ${path.length > 1 ? path[path.length - 2] : 'ภาพรวมทั้งโรงพยาบาล'}`}
+              >
+                <i className="bi bi-arrow-left-circle-fill" /> ย้อนกลับ
+              </Button>
+              <Button
+                id="btnSubunitReset"
+                variant="outline-secondary"
+                className="btn-soft d-inline-flex align-items-center gap-1 py-1 px-3"
+                style={{ fontSize: '13.5px' }}
+                onClick={() => setPath([])}
+                title="กลับสู่ภาพรวมทั้งโรงพยาบาล (Level 1)"
+              >
+                <i className="bi bi-arrow-counterclockwise" /> ภาพรวมทั้งหมด
+              </Button>
+            </div>
+          )
+        }
+      >
+        {path.length > 0 && (
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+            <div className="d-flex align-items-center gap-2 flex-wrap" style={{ fontSize: '13px' }}>
+              <span className="text-muted"><i className="bi bi-signpost-split text-brand" /> เส้นทาง:</span>
+              <button className="crumb" onClick={() => setPath([])}>ภาพรวมทั้งโรงพยาบาล</button>
+              {path.map((p, i) => (
+                <span key={i} className="d-inline-flex align-items-center gap-2">
+                  <i className="bi bi-chevron-right text-muted" style={{ fontSize: '11px' }} />
+                  <button
+                    className={`crumb ${i === path.length - 1 ? 'fw-bold' : ''}`}
+                    onClick={() => setPath(path.slice(0, i + 1))}
+                  >
+                    {i === 4 ? `ห้อง ${p}` : p}
+                  </button>
+                </span>
+              ))}
+            </div>
+            {children.length > 0 && (
+              <span className="hint mb-0" style={{ fontSize: '12.5px' }}>
+                <i className="bi bi-cursor-fill" /> คลิกที่แถวหน่วยงานเพื่อเจาะลึกลงไปอีก
+              </span>
+            )}
+          </div>
+        )}
+
         <div className="table-wrap">
           <table className="tbl">
             <thead>
@@ -207,11 +295,33 @@ export default function Executive() {
                 <td>{fmtPct(row[K.ldl])}</td><td>{fmtPct(row[K.egfr60])}</td><td>{fmtPct(row[K.eye])}</td><td>{fmtPct(row[K.foot])}</td>
               </tr>
               {children.length === 0 ? (
-                <tr><td colSpan={11} className="text-center text-muted py-4">สิ้นสุดที่ระดับห้องตรวจย่อย (Level 5)</td></tr>
+                <tr>
+                  <td colSpan={11} className="text-center py-4">
+                    <div className="d-flex flex-column align-items-center gap-2">
+                      <div className="text-muted">
+                        <i className="bi bi-info-circle-fill text-primary me-1" />
+                        สิ้นสุดที่ระดับห้องตรวจย่อย (Level 5) — ไม่มีหน่วยงานย่อยลึกลงไปกว่านี้แล้ว
+                      </div>
+                      <Button
+                        variant="warning"
+                        className="btn-back d-inline-flex align-items-center gap-2 py-1 px-3 mt-1"
+                        style={{ fontSize: '13.5px' }}
+                        onClick={() => setPath(path.slice(0, -1))}
+                      >
+                        <i className="bi bi-arrow-left-circle-fill" /> ย้อนกลับขึ้น 1 ระดับ
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 children.map((c) => (
                   <tr key={c[childKey]} className="clickable" onClick={() => setPath([...path, c[childKey]])}>
-                    <td className="fw-semibold">{c[childKey]}</td>
+                    <td className="fw-semibold">
+                      <span className="d-inline-flex align-items-center gap-1">
+                        {c[childKey]}
+                        <i className="bi bi-chevron-right text-muted" style={{ fontSize: '11px', opacity: 0.6 }} />
+                      </span>
+                    </td>
                     <td>{fmtInt(c[K.visits])}</td><td>{fmtInt(c[K.dmCount])}</td><td>{fmtInt(c[K.htCount])}</td>
                     <td>{fmtPct(c[K.dmBp])}</td><td>{fmtPct(c[K.htBp])}</td><td>{fmtPct(c[K.hba1c])}</td>
                     <td>{fmtPct(c[K.ldl])}</td><td>{fmtPct(c[K.egfr60])}</td><td>{fmtPct(c[K.eye])}</td><td>{fmtPct(c[K.foot])}</td>
